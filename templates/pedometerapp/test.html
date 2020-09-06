@@ -1,0 +1,62 @@
+{% extends "pedometerapp/base.html" %}
+{% block title%}Search{% endblock %}
+{% block body_block %}
+<div class="jumbotron">
+    {% if user.is_authenticated %}
+        <h4 style="text-align: center;">Here you can search data that you want!</h4>
+        <hr>
+        {% for message in messages %}
+            <div class="alert alert-danger">
+                <a class="close" href="#" data-dismiss="alert">×</a>
+                {{ message }}
+            </div>
+        {% endfor %}
+        <form action="" id="form">
+            {% csrf_token %}
+            <div id="user-info">
+                <div class="form-field">
+                    <input required class="form-control" type="date" name="date_from" required>
+                </div>
+                <div class="form-field">
+                    <input required class="form-control" type="date" name="date_to" required>
+                </div>
+            </div>
+            <button id="search">search</button>
+    </form>
+    <canvas id="population-chart"></canvas>
+    {% else %}
+    <h4 style="text-align: center;">Please login first<a class="btn btn-primary" href="{% url 'login' %}">Login</a></h4>
+    {% endif %}
+</div>
+<script type="text/javascript">
+    var form = document.getElementById('form')
+    csrftoken = form.getElementsByTagName("input")[0].value
+
+    document.getElementById('search').addEventListener('click', function (e) {
+        e.preventDefault();
+        submitFormData()
+    })
+    function submitFormData() {
+        var userFormData = {
+            'date_from': null,
+            'date_to': null,
+        }
+        userFormData.date_from = form.date_from.value
+        userFormData.date_to = form.date_to.value
+        var url = '/process_search/'
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRFToken': csrftoken,
+            },
+            body: JSON.stringify({ 'form': userFormData })
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                console.log('Success:', data);
+            })
+    }
+</script>
+{% endblock %}
